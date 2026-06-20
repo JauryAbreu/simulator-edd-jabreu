@@ -212,6 +212,23 @@ export default function LoginPage() {
         <Suspense fallback={<div className="h-64 w-full max-w-sm animate-pulse rounded-2xl bg-gray-100" />}>
           <AuthCard />
         </Suspense>
+
+        {/* Anonymous access */}
+        <div className="mt-6 w-full max-w-sm text-center">
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-gray-200" /></div>
+            <div className="relative flex justify-center"><span className="bg-gray-50 px-3 text-xs text-gray-400">o</span></div>
+          </div>
+          <Link
+            href="/anon/evaluations"
+            className="mt-4 flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors w-full"
+          >
+            <svg className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5} aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+            </svg>
+            Tomar una evaluación sin cuenta
+          </Link>
+        </div>
       </div>
     </div>
   );

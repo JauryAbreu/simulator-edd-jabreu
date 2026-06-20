@@ -8,7 +8,7 @@ interface User {
   username: string;
   fullName: string;
   email: string | null;
-  role: "ADMIN" | "USER";
+  role: "ADMIN" | "USER" | "ANONYMOUS";
   createdAt: string;
   _count: { attempts: number };
 }
@@ -47,6 +47,7 @@ export default function AdminUsersPage() {
   }
 
   function openEdit(u: User) {
+    if (u.role === "ANONYMOUS") return; // system account — not editable
     setEditing(u);
     setForm({ username: u.username, fullName: u.fullName, email: u.email ?? "", password: "", role: u.role });
     setError(null);
@@ -225,29 +226,42 @@ export default function AdminUsersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-700">
-              {filtered.map((u) => (
-                <tr key={u.id} className="hover:bg-slate-700/50 transition-colors">
-                  <td className="px-4 py-3 font-mono text-slate-200 text-xs">{u.username}</td>
-                  <td className="px-4 py-3 text-slate-300">{u.fullName}</td>
-                  <td className="px-4 py-3 text-slate-400 text-xs">{u.email ?? "—"}</td>
-                  <td className="px-4 py-3">
-                    <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${u.role === "ADMIN" ? "bg-purple-900/50 text-purple-300" : "bg-slate-700 text-slate-400"}`}>
-                      {u.role === "ADMIN" ? "Admin" : "Usuario"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-slate-300 text-center">{u._count?.attempts ?? 0}</td>
-                  <td className="px-4 py-3 text-slate-500 text-xs">{new Date(u.createdAt).toLocaleDateString("es-DO")}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2 flex-wrap">
-                      <Link href={`/admin/users/${u.id}`} className="text-xs text-sky-400 hover:underline">Intentos</Link>
-                      <button onClick={() => openEdit(u)} className="text-xs text-blue-400 hover:underline">Editar</button>
-                      <button onClick={() => { setResetId(u.id); setNewPassword(""); setResetMsg(null); }} className="text-xs text-orange-400 hover:underline">Reset PW</button>
-                      <a href={`/api/admin/export?type=user&id=${u.id}`} className="text-xs text-green-400 hover:underline">CSV</a>
-                      <button onClick={() => setDeleteId(u.id)} className="text-xs text-red-400 hover:underline">Eliminar</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map((u) => {
+                const isSystem = u.role === "ANONYMOUS";
+                return (
+                  <tr key={u.id} className={`transition-colors ${isSystem ? "opacity-70" : "hover:bg-slate-700/50"}`}>
+                    <td className="px-4 py-3 font-mono text-slate-200 text-xs">{u.username}</td>
+                    <td className="px-4 py-3 text-slate-300">{u.fullName}</td>
+                    <td className="px-4 py-3 text-slate-400 text-xs">{u.email ?? "—"}</td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                        u.role === "ADMIN"
+                          ? "bg-purple-900/50 text-purple-300"
+                          : u.role === "ANONYMOUS"
+                          ? "bg-slate-600 text-slate-300 italic"
+                          : "bg-slate-700 text-slate-400"
+                      }`}>
+                        {u.role === "ADMIN" ? "Admin" : u.role === "ANONYMOUS" ? "cuenta del sistema" : "Usuario"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-slate-300 text-center">{u._count?.attempts ?? 0}</td>
+                    <td className="px-4 py-3 text-slate-500 text-xs">{new Date(u.createdAt).toLocaleDateString("es-DO")}</td>
+                    <td className="px-4 py-3">
+                      {isSystem ? (
+                        <span className="text-xs text-slate-500 italic">solo lectura</span>
+                      ) : (
+                        <div className="flex gap-2 flex-wrap">
+                          <Link href={`/admin/users/${u.id}`} className="text-xs text-sky-400 hover:underline">Intentos</Link>
+                          <button onClick={() => openEdit(u)} className="text-xs text-blue-400 hover:underline">Editar</button>
+                          <button onClick={() => { setResetId(u.id); setNewPassword(""); setResetMsg(null); }} className="text-xs text-orange-400 hover:underline">Reset PW</button>
+                          <a href={`/api/admin/export?type=user&id=${u.id}`} className="text-xs text-green-400 hover:underline">CSV</a>
+                          <button onClick={() => setDeleteId(u.id)} className="text-xs text-red-400 hover:underline">Eliminar</button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
               {filtered.length === 0 && (
                 <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">{search ? "Sin resultados" : "No hay usuarios"}</td></tr>
               )}

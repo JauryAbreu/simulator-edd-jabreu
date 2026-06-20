@@ -9,6 +9,7 @@ datasource db {
 enum Role {
   USER
   ADMIN
+  ANONYMOUS
 }
 
 enum Difficulty {
@@ -131,6 +132,7 @@ model Attempt {
   submittedAt     DateTime
   durationSeconds Int
   status          AttemptStatus
+  isAnonymous     Boolean       @default(false)
   createdAt       DateTime      @default(now())
 
   user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)

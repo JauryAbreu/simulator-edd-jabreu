@@ -64,7 +64,8 @@ export async function POST(req: NextRequest) {
     }
 
     const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) {
+    // Intentional: ANONYMOUS check uses same generic message to avoid revealing account existence
+    if (!user || user.role === "ANONYMOUS") {
       return NextResponse.json({ error: "Credenciales inválidas" }, { status: 401 });
     }
 

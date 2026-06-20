@@ -47,6 +47,20 @@ async function main() {
   });
   console.log(`✅ Usuario demo creado: ${demoUser.username}`);
 
+  // ─── Usuario del sistema (ancla FK para intentos anónimos) ───────────────
+  const anonPassword = await bcrypt.hash("P@$$w0rd2026", 12);
+  await prisma.user.upsert({
+    where: { username: "sistema_anonimo" },
+    update: {},
+    create: {
+      username: "sistema_anonimo",
+      passwordHash: anonPassword,
+      fullName: "Sistema Anónimo",
+      role: "ANONYMOUS",
+    },
+  });
+  console.log("✅ Usuario sistema_anonimo creado/verificado");
+
   // ─── Evaluación 1: Matemáticas básicas (EJEMPLO) ──────────────────────────
   const eval1 = await prisma.evaluation.upsert({
     where: { id: "clseed0001000000eval0001" },
