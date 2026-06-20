@@ -23,29 +23,43 @@ enum AttemptStatus {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  username     String   @unique
+  id           String  @id @default(cuid())
+  username     String  @unique
+  email        String? @unique
   passwordHash String
   fullName     String
-  role         Role     @default(USER)
+  role         Role    @default(USER)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  attempts Attempt[]
+  attempts            Attempt[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
 
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique  // almacenado como SHA-256 del token real
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("password_reset_tokens")
+}
+
 model Evaluation {
-  id                  String   @id @default(cuid())
-  title               String
-  description         String
-  numberOfQuestions   Int
-  totalPoints         Float
-  timeLimitMinutes    Int
-  isActive            Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                String   @id @default(cuid())
+  title             String
+  description       String
+  numberOfQuestions Int
+  totalPoints       Float
+  timeLimitMinutes  Int
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   questions Question[]
   attempts  Attempt[]

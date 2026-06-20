@@ -24,16 +24,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { username, password, fullName } = parsed.data;
+    const { username, email, password, fullName } = parsed.data;
 
-    const existing = await prisma.user.findUnique({ where: { username } });
-    if (existing) {
-      return NextResponse.json({ error: "El usuario ya existe" }, { status: 409 });
+    // Verificar duplicados en paralelo
+    const [existingUsername, existingEmail] = await Promise.all([
+      prisma.user.findUnique({ where: { username } }),
+      prisma.user.findUnique({ where: { email } }),
+    ]);
+
+    if (existingUsername) {
+      return NextResponse.json({ error: "El nombre de usuario ya está en uso" }, { status: 409 });
+    }
+    if (existingEmail) {
+      return NextResponse.json({ error: "El correo electrónico ya está registrado" }, { status: 409 });
     }
 
     const passwordHash = await hashPassword(password);
     const user = await prisma.user.create({
-      data: { username, passwordHash, fullName },
+      data: { username, email, passwordHash, fullName },
     });
 
     const tokenPayload = { sub: user.id, username: user.username, role: user.role };
