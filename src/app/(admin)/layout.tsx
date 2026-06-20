@@ -1,8 +1,38 @@
+export const runtime = "nodejs";
+
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth/tokens";
+import { Sidebar, type NavItem } from "@/components/Sidebar";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import AdminLogoutButton from "./AdminLogoutButton";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+const ADMIN_NAV: NavItem[] = [
+  { href: "/admin",             label: "Dashboard",    icon: "grid",      exact: true },
+  { href: "/admin/evaluations", label: "Evaluaciones", icon: "clipboard" },
+  { href: "/admin/users",       label: "Usuarios",     icon: "users" },
+  { href: "/admin/audit",       label: "Auditoría",    icon: "document" },
+  { href: "/admin/profile",     label: "Mi perfil",    icon: "user" },
+];
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  let displayName = "Admin";
+  let username = "";
+  let initials = "AD";
+
+  if (token) {
+    try {
+      const payload = await verifyAccessToken(token);
+      username = payload.username;
+      displayName = payload.username;
+      initials = payload.username.slice(0, 2).toUpperCase();
+    } catch {
+      // proxy handles redirect on invalid token
+    }
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <a
@@ -12,43 +42,42 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         Saltar al contenido
       </a>
 
-      <header className="sticky top-0 z-40 border-b border-slate-800 bg-slate-950/95 backdrop-blur">
-        <nav aria-label="Panel de administración" className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
-          <Link href="/admin" className="text-base font-bold text-blue-400 shrink-0">
-            Admin EDD
-          </Link>
+      {/* Fixed sidebar — desktop */}
+      <div className="hidden md:block">
+        <Sidebar
+          brand="Admin EDD"
+          navItems={ADMIN_NAV}
+          user={{ username, initials, displayName }}
+          switchHref="/dashboard"
+          switchLabel="Vista usuario"
+        />
+      </div>
 
-          <div className="flex items-center gap-1 overflow-x-auto text-sm" role="list">
-            {[
-              { href: "/admin", label: "Dashboard" },
-              { href: "/admin/evaluations", label: "Evaluaciones" },
-              { href: "/admin/users", label: "Usuarios" },
-              { href: "/admin/audit", label: "Auditoría" },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                role="listitem"
-                className="rounded-md px-3 py-1.5 font-medium text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors whitespace-nowrap"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </div>
-
-          <div className="ml-auto flex items-center gap-2 shrink-0">
-            <Link href="/dashboard" className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-              ← Vista usuario
+      {/* Compact top bar — mobile only */}
+      <header className="sticky top-0 z-40 flex h-12 items-center justify-between border-b border-slate-800 bg-slate-950/95 px-4 backdrop-blur md:hidden">
+        <Link href="/admin" className="text-sm font-bold text-blue-400">
+          Admin EDD
+        </Link>
+        <nav className="flex items-center gap-1 overflow-x-auto text-xs">
+          {ADMIN_NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="shrink-0 rounded px-2 py-1 font-medium text-slate-400 hover:text-slate-100"
+            >
+              {item.label}
             </Link>
-            <ThemeToggle />
-            <AdminLogoutButton />
-          </div>
+          ))}
         </nav>
+        <ThemeToggle />
       </header>
 
-      <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        {children}
-      </main>
+      {/* Page content */}
+      <div className="md:pl-60">
+        <main id="main-content" className="w-full px-4 py-6 sm:px-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 
 interface User {
@@ -238,6 +239,7 @@ export default function AdminUsersPage() {
                   <td className="px-4 py-3 text-slate-500 text-xs">{new Date(u.createdAt).toLocaleDateString("es-DO")}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-2 flex-wrap">
+                      <Link href={`/admin/users/${u.id}`} className="text-xs text-sky-400 hover:underline">Intentos</Link>
                       <button onClick={() => openEdit(u)} className="text-xs text-blue-400 hover:underline">Editar</button>
                       <button onClick={() => { setResetId(u.id); setNewPassword(""); setResetMsg(null); }} className="text-xs text-orange-400 hover:underline">Reset PW</button>
                       <a href={`/api/admin/export?type=user&id=${u.id}`} className="text-xs text-green-400 hover:underline">CSV</a>

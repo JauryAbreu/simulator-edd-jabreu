@@ -3,14 +3,59 @@
 /* Dark mode via class strategy — add `dark` to <html> */
 @variant dark (&:is(.dark, .dark *));
 
+/* ─── Design tokens ─────────────────────────────────────────── */
 :root {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.75rem;   /* 12px — shared border-radius token */
+
   --background: #ffffff;
   --foreground: #111827;
+
+  /* Surface / card */
+  --surface: #ffffff;
+  --surface-subtle: #f8fafc;
+  --border-color: #e2e8f0;
+
+  /* Text scale — minimum AA on white */
+  --text-primary:   #0f172a;   /* 14.7:1 */
+  --text-secondary: #475569;   /* 5.9:1  */
+  --text-subtle:    #94a3b8;   /* decorative / large text only */
+
+  /* Brand */
+  --accent:       #2563eb;
+  --accent-hover: #1d4ed8;
+
+  /* Status */
+  --color-success: #16a34a;
+  --color-danger:  #dc2626;
+  --color-warning: #d97706;
+  --color-info:    #2563eb;
+
+  /* Sidebar — always dark, independent of page color scheme */
+  --sidebar-bg:          #020617;
+  --sidebar-border:      #1e293b;
+  --sidebar-text:        #64748b;
+  --sidebar-text-active: #f1f5f9;
+  --sidebar-item-hover:  #0f172a;
+  --sidebar-item-active: #1d4ed8;
 }
 
 .dark {
-  --background: #0f172a;
+  --background: #020617;
   --foreground: #f1f5f9;
+
+  --surface:        #0f172a;
+  --surface-subtle: #1e293b;
+  --border-color:   #334155;
+
+  --text-primary:   #f1f5f9;   /* 14.7:1 on slate-950 */
+  --text-secondary: #94a3b8;   /* 5.3:1  */
+  --text-subtle:    #475569;
+
+  --color-success: #4ade80;
+  --color-danger:  #f87171;
+  --color-warning: #fbbf24;
+  --color-info:    #60a5fa;
 }
 
 @theme inline {
@@ -19,14 +64,20 @@
   --font-sans: var(--font-geist);
 }
 
-/* Focus visible — AA compliant */
+/* ─── Focus — AA compliant ──────────────────────────────────── */
 *:focus-visible {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
   border-radius: 2px;
 }
 
-/* Smooth dark mode transition */
+/* ─── Base typography ───────────────────────────────────────── */
+html {
+  font-size: 16px;
+  font-family: var(--font-sans);
+}
+
+/* ─── Dark mode transition ──────────────────────────────────── */
 html {
   color-scheme: light;
   transition: color 150ms, background-color 150ms;
