@@ -36,7 +36,7 @@ const cookieBase = {
   path: "/",
 };
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   const isDashboard = pathname.startsWith("/dashboard");
@@ -65,7 +65,7 @@ export async function middleware(req: NextRequest) {
     }
   }
 
-  // Try to refresh
+  // Try to refresh (JWT-only; DB revocation check happens in /api/auth/refresh)
   if (refreshToken) {
     try {
       const { newAccess, newRefresh, payload } = await refreshTokens(refreshToken);
