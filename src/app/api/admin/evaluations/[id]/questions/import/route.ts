@@ -23,6 +23,7 @@ const rowSchema = z.object({
   text: z.string().min(1, "text es requerido"),
   explanation: z.string().optional(),
   difficulty: z.enum(["BAJA", "MEDIA", "ALTA"]).default("MEDIA"),
+  tag: z.string().max(100).optional(),
   opt1: z.string().min(1, "opt1 es requerido"),
   opt1_correct: z.string().transform((v) => v.toLowerCase() === "true"),
   opt2: z.string().min(1, "opt2 es requerido"),
@@ -91,6 +92,7 @@ export async function POST(req: NextRequest, { params }: Params) {
           text: d.text,
           explanation: d.explanation,
           difficulty: d.difficulty,
+          tag: d.tag || undefined,
           options: { createMany: { data: options } },
         },
       });

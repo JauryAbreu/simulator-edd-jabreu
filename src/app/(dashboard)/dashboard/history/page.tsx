@@ -59,7 +59,7 @@ export default async function HistoryPage() {
                 const mins = Math.floor(a.durationSeconds / 60);
                 const secs = a.durationSeconds % 60;
                 return (
-                  <tr key={a.id} className="hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
+                  <tr key={a.id} className={`hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors ${a.status === "OUT_OF_TIME" ? "border-l-2 border-orange-400" : ""}`}>
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-slate-100 max-w-[200px] truncate">
                       {a.evaluation.title}
                     </td>
@@ -76,7 +76,12 @@ export default async function HistoryPage() {
                       {mins}m {secs}s
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[a.status]}`}>
+                      <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${statusClass[a.status]}`}>
+                        {a.status === "OUT_OF_TIME" && (
+                          <svg className="w-3 h-3 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                          </svg>
+                        )}
                         {statusLabel[a.status]}
                       </span>
                     </td>

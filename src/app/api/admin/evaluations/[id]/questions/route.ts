@@ -17,6 +17,7 @@ const questionSchema = z.object({
   text: z.string().min(1),
   explanation: z.string().optional(),
   difficulty: z.enum(["BAJA", "MEDIA", "ALTA"]).default("MEDIA"),
+  tag: z.string().max(100).optional(),
   options: z.array(optionSchema).min(2).max(5).refine(
     (opts) => opts.filter((o) => o.isCorrect).length === 1,
     { message: "Debe haber exactamente una opción correcta" }

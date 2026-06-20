@@ -240,6 +240,7 @@ export default function AdminUsersPage() {
                     <div className="flex gap-2 flex-wrap">
                       <button onClick={() => openEdit(u)} className="text-xs text-blue-400 hover:underline">Editar</button>
                       <button onClick={() => { setResetId(u.id); setNewPassword(""); setResetMsg(null); }} className="text-xs text-orange-400 hover:underline">Reset PW</button>
+                      <a href={`/api/admin/export?type=user&id=${u.id}`} className="text-xs text-green-400 hover:underline">CSV</a>
                       <button onClick={() => setDeleteId(u.id)} className="text-xs text-red-400 hover:underline">Eliminar</button>
                     </div>
                   </td>

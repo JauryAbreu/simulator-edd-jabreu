@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 
 interface Option { id?: string; text: string; isCorrect: boolean }
-interface Question { id: string; text: string; explanation?: string; difficulty: string; isActive: boolean; options: Option[] }
+interface Question { id: string; text: string; explanation?: string; difficulty: string; tag?: string; isActive: boolean; options: Option[] }
 
 const DIFF_LABELS: Record<string, string> = { BAJA: "Baja", MEDIA: "Media", ALTA: "Alta" };
 
-const emptyQuestion = (): { text: string; explanation: string; difficulty: "BAJA" | "MEDIA" | "ALTA"; options: Option[] } => ({
-  text: "", explanation: "", difficulty: "MEDIA",
+const emptyQuestion = (): { text: string; explanation: string; difficulty: "BAJA" | "MEDIA" | "ALTA"; tag: string; options: Option[] } => ({
+  text: "", explanation: "", difficulty: "MEDIA", tag: "",
   options: [
     { text: "", isCorrect: true },
     { text: "", isCorrect: false },
@@ -55,7 +55,7 @@ export default function QuestionsPage() {
 
   function openEdit(q: Question) {
     setEditing(q);
-    setForm({ text: q.text, explanation: q.explanation ?? "", difficulty: q.difficulty as "BAJA" | "MEDIA" | "ALTA",
+    setForm({ text: q.text, explanation: q.explanation ?? "", difficulty: q.difficulty as "BAJA" | "MEDIA" | "ALTA", tag: q.tag ?? "",
       options: q.options.map(({ id, text, isCorrect }) => ({ id, text, isCorrect })) });
     setError(null);
     setShowForm(true);
@@ -165,11 +165,15 @@ export default function QuestionsPage() {
                   <input type="text" value={form.explanation} onChange={(e) => setForm((f) => ({ ...f, explanation: e.target.value }))} className={inputClass} />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-slate-400 mb-1">Dificultad</label>
-                  <select value={form.difficulty} onChange={(e) => setForm((f) => ({ ...f, difficulty: e.target.value as "BAJA" | "MEDIA" | "ALTA" }))} className={inputClass}>
-                    {["BAJA", "MEDIA", "ALTA"].map((d) => <option key={d} value={d}>{DIFF_LABELS[d]}</option>)}
-                  </select>
+                  <label className="block text-xs font-medium text-slate-400 mb-1">Categoría / Tema (opcional)</label>
+                  <input type="text" maxLength={100} placeholder="Ej: Álgebra, Historia, Redes…" value={form.tag} onChange={(e) => setForm((f) => ({ ...f, tag: e.target.value }))} className={inputClass} />
                 </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Dificultad</label>
+                <select value={form.difficulty} onChange={(e) => setForm((f) => ({ ...f, difficulty: e.target.value as "BAJA" | "MEDIA" | "ALTA" }))} className={`w-48 ${inputClass}`}>
+                  {["BAJA", "MEDIA", "ALTA"].map((d) => <option key={d} value={d}>{DIFF_LABELS[d]}</option>)}
+                </select>
               </div>
               <fieldset>
                 <legend className="text-xs font-medium text-slate-400 mb-2">Opciones (marca la correcta)</legend>
@@ -209,7 +213,10 @@ export default function QuestionsPage() {
                   <button onClick={() => handleDelete(q.id)} className="text-xs text-red-400 hover:underline">Eliminar</button>
                 </div>
               </div>
-              <div className="pl-5 flex flex-wrap gap-2">
+              <div className="pl-5 flex flex-wrap gap-2 items-center">
+                {q.tag && (
+                  <span className="rounded-full border border-blue-700 px-2 py-0.5 text-xs text-blue-400">#{q.tag}</span>
+                )}
                 {q.options.map((o) => (
                   <span key={o.id} className={`rounded px-2 py-0.5 text-xs ${o.isCorrect ? "bg-green-900/50 text-green-300 font-semibold" : "bg-slate-700 text-slate-400"}`}>
                     {o.text}
@@ -225,10 +232,10 @@ export default function QuestionsPage() {
       {/* Formato CSV */}
       <details id="csv-format" className="rounded-xl border border-slate-700 bg-slate-900 p-4 text-sm text-slate-400">
         <summary className="cursor-pointer text-slate-300 font-medium">Formato CSV esperado</summary>
-        <pre className="mt-3 text-xs overflow-x-auto bg-slate-950 p-3 rounded">{`text,explanation,difficulty,opt1,opt1_correct,opt2,opt2_correct,opt3,opt3_correct,opt4,opt4_correct
-"¿Cuánto es 2+2?","Suma simple","BAJA","3",false,"4",true,"5",false,"6",false
-"Capital de Francia?","Geografía","MEDIA","Londres",false,"París",true,"Berlín",false,"Roma",false`}</pre>
-        <p className="mt-2 text-xs">• difficulty: BAJA | MEDIA | ALTA &nbsp;•&nbsp; opt_correct: true | false &nbsp;•&nbsp; Exactamente un true por fila</p>
+        <pre className="mt-3 text-xs overflow-x-auto bg-slate-950 p-3 rounded">{`text,explanation,difficulty,tag,opt1,opt1_correct,opt2,opt2_correct,opt3,opt3_correct,opt4,opt4_correct
+"¿Cuánto es 2+2?","Suma simple","BAJA","Matemáticas","3",false,"4",true,"5",false,"6",false
+"Capital de Francia?","Geografía","MEDIA","Geografía","Londres",false,"París",true,"Berlín",false,"Roma",false`}</pre>
+        <p className="mt-2 text-xs">• difficulty: BAJA | MEDIA | ALTA &nbsp;•&nbsp; tag: categoría opcional &nbsp;•&nbsp; opt_correct: true | false &nbsp;•&nbsp; Exactamente un true por fila</p>
       </details>
     </div>
   );

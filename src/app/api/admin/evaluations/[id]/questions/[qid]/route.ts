@@ -12,6 +12,7 @@ const updateSchema = z.object({
   text: z.string().min(1).optional(),
   explanation: z.string().optional(),
   difficulty: z.enum(["BAJA", "MEDIA", "ALTA"]).optional(),
+  tag: z.string().max(100).optional().nullable(),
   isActive: z.boolean().optional(),
   options: z.array(z.object({
     id: z.string().optional(),

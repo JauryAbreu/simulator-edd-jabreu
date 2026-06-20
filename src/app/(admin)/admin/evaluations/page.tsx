@@ -79,9 +79,14 @@ export default function AdminEvaluationsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-100">Evaluaciones</h1>
-        <button onClick={openCreate} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
-          + Nueva evaluación
-        </button>
+        <div className="flex gap-2">
+          <a href="/api/admin/export?type=all" className="rounded-md bg-slate-700 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-slate-600 transition-colors">
+            ↓ Exportar todo
+          </a>
+          <button onClick={openCreate} className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 transition-colors">
+            + Nueva evaluación
+          </button>
+        </div>
       </div>
 
       {/* Modal form */}
@@ -164,9 +169,10 @@ export default function AdminEvaluationsPage() {
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <button onClick={() => openEdit(ev)} className="text-xs text-blue-400 hover:underline">Editar</button>
                       <Link href={`/admin/evaluations/${ev.id}/questions`} className="text-xs text-slate-400 hover:underline">Preguntas</Link>
+                      <a href={`/api/admin/export?type=evaluation&id=${ev.id}`} className="text-xs text-green-400 hover:underline">CSV</a>
                       <button onClick={() => setDeleteId(ev.id)} className="text-xs text-red-400 hover:underline">Eliminar</button>
                     </div>
                   </td>

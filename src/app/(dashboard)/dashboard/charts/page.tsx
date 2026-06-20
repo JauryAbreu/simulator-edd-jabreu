@@ -5,6 +5,8 @@ import { verifyAccessToken } from "@/lib/auth/tokens";
 import { prisma } from "@/lib/prisma";
 import { ScoreEvolutionChart } from "@/components/charts/ScoreEvolutionChart";
 import { AttemptDistributionChart } from "@/components/charts/AttemptDistributionChart";
+import { TagPerformanceChart } from "@/components/charts/TagPerformanceChart";
+import type { TagStat } from "@/components/charts/TagPerformanceChart";
 import Link from "next/link";
 
 export const metadata = { title: "Estadísticas" };
@@ -17,11 +19,17 @@ export default async function ChartsPage() {
     try { userId = (await verifyAccessToken(token)).sub; } catch {}
   }
 
-  const attempts = await prisma.attempt.findMany({
-    where: { userId },
-    orderBy: { createdAt: "asc" },
-    include: { evaluation: { select: { title: true, totalPoints: true } } },
-  });
+  const [attempts, allAnswers] = await Promise.all([
+    prisma.attempt.findMany({
+      where: { userId },
+      orderBy: { createdAt: "asc" },
+      include: { evaluation: { select: { title: true, totalPoints: true } } },
+    }),
+    prisma.answer.findMany({
+      where: { attempt: { userId } },
+      select: { isCorrect: true, question: { select: { tag: true } } },
+    }),
+  ]);
 
   if (attempts.length === 0) {
     return (
@@ -52,6 +60,22 @@ export default async function ChartsPage() {
     correctas: a.correctCount,
     incorrectas: a.incorrectCount,
     sinResponder: a.unansweredCount,
+  }));
+
+  // Fortalezas / debilidades por categoría de pregunta
+  const tagMap: Record<string, { correct: number; total: number }> = {};
+  for (const a of allAnswers) {
+    const tag = a.question.tag;
+    if (!tag) continue;
+    if (!tagMap[tag]) tagMap[tag] = { correct: 0, total: 0 };
+    tagMap[tag].total++;
+    if (a.isCorrect) tagMap[tag].correct++;
+  }
+  const tagData: TagStat[] = Object.entries(tagMap).map(([tag, { correct, total }]) => ({
+    tag,
+    correct,
+    total,
+    pct: Math.round((correct / total) * 100),
   }));
 
   // Agrupar intentos por evaluación para comparativa
@@ -112,6 +136,17 @@ export default async function ChartsPage() {
           Correctas / Incorrectas / Sin responder (últimos 8 intentos)
         </h2>
         <AttemptDistributionChart data={distributionData} />
+      </section>
+
+      {/* Fortalezas y debilidades por categoría */}
+      <section aria-labelledby="tag-heading" className="rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5">
+        <h2 id="tag-heading" className="mb-1 text-base font-semibold text-gray-800 dark:text-slate-200">
+          Fortalezas y debilidades por categoría
+        </h2>
+        <p className="mb-4 text-xs text-gray-400 dark:text-slate-500">
+          Verde ≥ 70 % · Amarillo 50–69 % · Rojo &lt; 50 %
+        </p>
+        <TagPerformanceChart data={tagData} />
       </section>
 
       {/* Comparativa por evaluación (solo si hay >1 intento de la misma) */}
