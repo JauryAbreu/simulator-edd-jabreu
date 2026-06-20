@@ -57,6 +57,15 @@ export default function ExamPage() {
     return () => window.removeEventListener("beforeunload", handler);
   }, []);
 
+  // ── Proactive token refresh — access token TTL is 15 min, exams can last longer
+  useEffect(() => {
+    if (!examData) return;
+    const interval = setInterval(() => {
+      fetch("/api/auth/refresh", { method: "POST" }).catch(() => {});
+    }, 10 * 60 * 1000); // refresh every 10 min while exam is open
+    return () => clearInterval(interval);
+  }, [examData]);
+
   // ── Submit ───────────────────────────────────────────────────────────────
   const handleSubmit = useCallback(async (auto = false) => {
     if (submittedRef.current || !examData) return;
@@ -65,17 +74,31 @@ export default function ExamPage() {
     setSubmitting(true);
     setShowConfirm(false);
 
-    const res = await fetch(`/api/evaluations/${evaluationId}/submit`, {
+    const body = JSON.stringify({
+      startedAt: examData.startedAt,
+      answers: examData.questions.map((q) => ({
+        questionId: q.id,
+        selectedOptionId: answers[q.id] ?? null,
+      })),
+    });
+
+    let res = await fetch(`/api/evaluations/${evaluationId}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        startedAt: examData.startedAt,
-        answers: examData.questions.map((q) => ({
-          questionId: q.id,
-          selectedOptionId: answers[q.id] ?? null,
-        })),
-      }),
+      body,
     });
+
+    // If the access token expired between the proactive refreshes, try refreshing once and retry
+    if (res.status === 401) {
+      const refreshed = await fetch("/api/auth/refresh", { method: "POST" });
+      if (refreshed.ok) {
+        res = await fetch(`/api/evaluations/${evaluationId}/submit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+        });
+      }
+    }
 
     const data = await res.json();
     if (!res.ok) {
